@@ -1,0 +1,87 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: afiyetai-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: afiyetai
+      POSTGRES_USER: afiyetai_user
+      POSTGRES_PASSWORD: Promoayca.1994
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U afiyetai_user -d afiyetai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # AfiyetAI Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: afiyetai-app:latest
+    container_name: afiyetai-app
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      # Database
+      DATABASE_URL: postgresql://afiyetai_user:Promoayca.1994@db:5432/afiyetai
+      SQLITE_DATABASE: users.db
+      
+      # API Keys
+      SPOONACULAR_API_KEY: ${SPOONACULAR_API_KEY}
+      GOOGLE_TRANSLATE_API_KEY: ${GOOGLE_TRANSLATE_API_KEY}
+      SHELF_LIFE_API_BASE_URL: ${SHELF_LIFE_API_BASE_URL:-https://shelf-life-api.com}
+      
+      # Application Settings
+      DEBUG: "False"
+      LOG_LEVEL: INFO
+      APP_LOCALE: tr-TR
+      OCR_LANG: tur+eng
+      TESSERACT_CMD: ""
+      
+      # Flask Settings
+      FLASK_ENV: production
+      FLASK_HOST: 0.0.0.0
+      FLASK_PORT: 5001
+      SECRET_KEY: ${SECRET_KEY:-CHANGE-THIS-SECRET-KEY-IN-PRODUCTION}
+      
+      # Session Settings
+      SESSION_LIFETIME: 3600
+      SESSION_COOKIE_SECURE: "False"
+      SESSION_COOKIE_HTTPONLY: "True"
+      SESSION_COOKIE_SAMESITE: Lax
+      
+      # File Upload
+      MAX_FILE_SIZE: 16777216
+      UPLOAD_FOLDER: /app/uploads
+      MAX_UPLOADS_PER_HOUR: 10
+      
+      # Network
+      HTTP_TIMEOUT_DEFAULT: 8
+      HTTP_RETRIES_DEFAULT: 2
+      
+    
+    volumes:
+      - uploads_data:/app/uploads
+      - ./translation_cache.json:/app/translation_cache.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5001/', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+  uploads_data:
+    driver: local
