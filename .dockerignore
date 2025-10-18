@@ -1,0 +1,82 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+*.log.*
+logs/
+
+# Databases (local)
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Environment
+.env.local
+.env.*.local
+
+# Uploads (will be in volume)
+uploads/
+
+# Data files (if large)
+data/*.csv
+data/*.json
+data/*.pkl
+
+# Documentation
+*.md
+docs/
+DEPLOYMENT.md
+DOCKER.md
+README.docker.md
+
+# Docker
+Dockerfile.dev
+docker-compose.dev.yml
+.dockerignore
+
+# Temp files
+*.tmp
+*.temp
+.cache/
+
+# Large data files
+*.tsv
+*.tar
+*.tar.gz
+*.zip
