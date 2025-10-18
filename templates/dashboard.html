@@ -1,0 +1,693 @@
+{% extends "base.html" %}
+
+{% block title %}Panel - AfiyetAI{% endblock %}
+
+{% block content %}
+<!-- Dashboard Hero -->
+<div class="dashboard-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="welcome-section">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="welcome-content">
+                                       <div class="user-badge mb-3">
+                                           <span class="badge bg-gradient-warning px-3 py-2">
+                                               <i class="fas fa-user me-2"></i>{{ user.username }}
+                                           </span>
+                                       </div>
+                                <h1 class="display-5 fw-bold text-white mb-3">
+                                    <i class="fas fa-user-circle me-3 text-warning"></i>
+                                    Hoş geldiniz, {{ user.username }}!
+                                </h1>
+                                <p class="lead text-white-50 mb-4">
+                                    AI teknolojisi ile fiş analizi ve kişiselleştirilmiş tarif önerileri
+                                </p>
+                                <div class="stats">
+                                    <div class="row g-3">
+                                        <div class="col-auto">
+                                            <div class="stat-item">
+                                                <i class="fas fa-receipt text-accent"></i>
+                                                <span class="text-white">{{ receipt_count }} Fiş</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="stat-item">
+                                                <i class="fas fa-box text-primary"></i>
+                                                <span class="text-white">{{ inventory|length }} Ürün</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="stat-item">
+                                                <i class="fas fa-chart-line text-accent"></i>
+                                                <span class="text-white">AI Destekli</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="premium-user-actions text-end">
+                                <div class="premium-avatar mb-3">
+                                    <i class="fas fa-user-circle fa-5x text-warning"></i>
+                                </div>
+                                <div class="premium-action-buttons">
+                                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm mb-2">
+                                        <i class="fas fa-sign-out-alt me-1"></i>Çıkış Yap
+                                    </a>
+                                    <br>
+                                    <small class="text-white-50">Hesabınız aktif</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5">
+
+    <!-- Upload Section -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="premium-upload-section">
+                <div class="card border-0 shadow-lg bg-gradient-primary text-white">
+                    <div class="card-header border-0 bg-transparent text-center py-4">
+                        <div class="premium-icon mb-3">
+                            <i class="fas fa-brain fa-3x text-warning"></i>
+                        </div>
+                        <h3 class="mb-0">
+                            <i class="fas fa-cloud-upload-alt me-2"></i>
+                            AI Fiş Analizi
+                        </h3>
+                        <p class="mb-0 mt-2 opacity-75">AI teknolojisi ile gelişmiş fiş işleme</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+                            <div class="mb-4">
+                                <label for="file" class="form-label fw-bold text-white">
+                                    <i class="fas fa-camera me-2"></i>Fiş Fotoğrafı Seçin
+                                </label>
+                                <div class="premium-file-input">
+                                    <input type="file" class="form-control form-control-lg" id="file" name="file" accept="image/*" required>
+                                    <div class="file-preview mt-3" id="filePreview" style="display: none;">
+                                        <div class="preview-image-container">
+                                            <img id="previewImage" class="img-fluid rounded shadow" style="max-height: 200px;">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-text text-white-50 mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Desteklenen formatlar: JPG, PNG, GIF, BMP, TIFF (Max: 16MB)
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-warning btn-lg py-3" id="uploadBtn">
+                                    <i class="fas fa-magic me-2"></i>
+                                    AI ile Fişi Analiz Et
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Progress Bar -->
+                        <div class="mt-4" id="progressContainer" style="display: none;">
+                            <div class="premium-progress">
+                                <div class="progress bg-dark bg-opacity-25" style="height: 8px;">
+                                    <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <small class="text-white-50" id="progressText">
+                                        <i class="fas fa-cog fa-spin me-2"></i>AI analizi yapılıyor...
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Envanter Listesi - Açılır/Kapanır -->
+            <div class="card shadow mt-3">
+                <div class="card-header bg-warning text-success" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#inventoryCollapse" aria-expanded="true">
+                    <h5>
+                        <i class="fas fa-box me-2"></i>Mevcut Envanterim
+                        <i class="fas fa-chevron-down float-end"></i>
+                    </h5>
+                </div>
+                <div class="collapse show" id="inventoryCollapse">
+                    <div class="card-body">
+                        {% if inventory %}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Ürün</th>
+                                            <th>Miktar</th>
+                                            <th>Son Kullanma</th>
+                                            <th>Durum</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in inventory %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ item[2] if item[2] is string else item.product_name }}</strong>
+                                                {% if item[3] and item[3] != item[2] %}
+                                                    <br><small class="text-muted">{{ item[3] }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ item[5] if item[5] else 1 }} {{ item[6] if item[6] else 'adet' }}</td>
+                                            <td>
+                                                {% if item[8] %}
+                                                    <small>{{ item[8].strftime('%d.%m.%Y') if item[8] is string else item[8].strftime('%d.%m.%Y') }}</small>
+                                                {% else %}
+                                                    <small class="text-muted">Belirsiz</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item[8] %}
+                                                    {% set days_left = (item[8] - now).days if item[8] is string else (item[8] - now).days %}
+                                                    {% if days_left <= 3 %}
+                                                        <span class="badge bg-danger">Acil</span>
+                                                    {% elif days_left <= 7 %}
+                                                        <span class="badge bg-warning">Yakında</span>
+                                                    {% else %}
+                                                        <span class="badge bg-success">İyi</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Bilinmiyor</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-box-open fa-3x mb-3"></i>
+                                <p>Henüz envanterinizde ürün bulunmuyor.</p>
+                                <p>Fiş yükleyerek ürünlerinizi envanterinize ekleyebilirsiniz.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-success">
+                    <h5><i class="fas fa-user-cog me-2"></i>Profil Tercihleri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6><i class="fas fa-exclamation-triangle text-warning me-2"></i>Alerjilerim</h6>
+                        <div id="allergies-list">
+                            <span class="badge bg-warning text-dark me-1 mb-1">Gluten</span>
+                        </div>
+                        <button class="btn btn-outline-warning btn-sm mt-2" onclick="editAllergies()">
+                            <i class="fas fa-edit me-1"></i>Düzenle
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-thumbs-down text-danger me-2"></i>Sevmediğim Ürünler</h6>
+                        <div id="dislikes-list">
+                            <span class="badge bg-danger me-1 mb-1">Gluten Free Quinoa</span>
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm mt-2" onclick="editDislikes()">
+                            <i class="fas fa-edit me-1"></i>Düzenle
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-leaf text-success me-2"></i>Diyet Tercihlerim</h6>
+                        <div id="diet-preferences-list">
+                            <span class="badge bg-success me-1 mb-1">Vejetaryen</span>
+                        </div>
+                        <button class="btn btn-outline-success btn-sm mt-2" onclick="editDietPreferences()">
+                            <i class="fas fa-edit me-1"></i>Düzenle
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow mt-3">
+                <div class="card-header bg-warning text-success">
+                    <h5><i class="fas fa-chart-bar me-2"></i>İstatistikler</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ receipt_count }}</h4>
+                                <small class="text-muted">Yüklenen Fiş</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">{{ inventory|length }}</h4>
+                            <small class="text-muted">Envanter Ürünü</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h5><i class="fas fa-star me-2"></i>Özellikler</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.premium %}
+                        <p class="text-success"><i class="fas fa-check-circle me-2"></i>Hesabınız aktif!</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Sınırsız fiş yükleme</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Gelişmiş analiz</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Öncelikli destek</li>
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">Tüm özelliklerden yararlanın!</p>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-times text-danger me-2"></i>Sınırsız fiş yükleme</li>
+                            <li><i class="fas fa-times text-danger me-2"></i>Gelişmiş analiz</li>
+                            <li><i class="fas fa-times text-danger me-2"></i>Öncelikli destek</li>
+                        </ul>
+                        <button class="btn btn-warning btn-sm w-100">
+                            <i class="fas fa-crown me-2"></i>Gelişmiş Özellikler
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Sayfa yüklendiğinde tercihleri getir
+document.addEventListener('DOMContentLoaded', function() {
+    loadUserPreferences();
+});
+
+function loadUserPreferences() {
+    fetch('/api/get-preferences')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updatePreferenceUI('allergies', data.preferences.allergies);
+                updatePreferenceUI('dislikes', data.preferences.dislikes);
+                updatePreferenceUI('diet-preferences', data.preferences.diet_preferences);
+            }
+        })
+        .catch(error => {
+            console.error('Tercih yükleme hatası:', error);
+        });
+}
+
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const uploadBtn = document.getElementById('uploadBtn');
+    uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>İşleniyor...';
+    uploadBtn.disabled = true;
+});
+
+// Profil tercihleri düzenleme fonksiyonları
+function editAllergies() {
+    const currentAllergies = [
+        // Ana Alerjenler (14 ana alerjen)
+        'Gluten', 'Süt', 'Yumurta', 'Soya', 'Balık', 'Kabuklu Deniz Ürünleri',
+        'Fındık', 'Ceviz', 'Badem', 'Antep Fıstığı', 'Kaju', 'Brezilya Fındığı',
+        'Kestane', 'Hindistan Cevizi', 'Susam', 'Hardal', 'Kereviz', 'Lupin',
+        
+        // Fındık ve Kuruyemişler (Genişletilmiş)
+        'Makaroni', 'Ayçiçeği Çekirdeği', 'Kabak Çekirdeği', 'Keten Tohumu',
+        'Chia Tohumu', 'Kinoa', 'Amarant', 'Pirinç', 'Mısır', 'Yulaf',
+        
+        // Meyve Alerjileri (Genişletilmiş)
+        'Çilek', 'Kivi', 'Mango', 'Ananas', 'Avokado', 'Şeftali', 'Kiraz', 'Erik',
+        'Armut', 'Elma', 'Portakal', 'Limon', 'Greyfurt', 'Mandalina', 'Üzüm',
+        'İncir', 'Hurma', 'Kayısı', 'Nektarin', 'Papaya', 'Guava', 'Nar',
+        'Böğürtlen', 'Ahududu', 'Yaban Mersini', 'Kızılcık', 'Karpuz', 'Kavun',
+        
+        // Sebze Alerjileri (Genişletilmiş)
+        'Domates', 'Patlıcan', 'Biber', 'Salatalık', 'Havuç', 'Kereviz', 'Maydanoz',
+        'Dereotu', 'Fesleğen', 'Nane', 'Roka', 'Ispanak', 'Marul', 'Lahana',
+        'Karnabahar', 'Brokoli', 'Brüksel Lahanası', 'Şalgam', 'Turp', 'Pırasa',
+        'Soğan', 'Sarımsak', 'Patates', 'Tatlı Patates', 'Kabak', 'Balkabağı',
+        'Bezelye', 'Fasulye', 'Nohut', 'Mercimek', 'Bakla', 'Barbunya',
+        
+        // Baharat ve Otlar (Genişletilmiş)
+        'Kekik', 'Karabiber', 'Kırmızı Biber', 'Kimyon', 'Tarçın', 'Zencefil',
+        'Zerdeçal', 'Defne Yaprağı', 'Biberiye', 'Karanfil', 'Muskat', 'Vanilya',
+        'Anason', 'Rezene', 'Kişniş', 'Sumak', 'Nar Ekşisi', 'Sirke', 'Limon Suyu',
+        'Pul Biber', 'Kırmızı Biber Pul', 'Acı Biber', 'Biber Turşusu',
+        
+        // Et ve Protein Alerjileri
+        'Sığır Eti', 'Kuzu Eti', 'Domuz Eti', 'Tavuk', 'Hindi', 'Ördek', 'Kaz',
+        'Karaciğer', 'Böbrek', 'Dil', 'İşkembe', 'Kokoreç', 'Sucuk', 'Sosis',
+        'Pastırma', 'Jambon', 'Bacon', 'Salam', 'Balık', 'Somon', 'Ton Balığı',
+        'Kalamar', 'Ahtapot', 'Midye', 'İstiridye', 'Karides', 'Yengeç', 'Istakoz',
+        
+        // Süt Ürünleri Alerjileri
+        'Peynir', 'Kaşar Peyniri', 'Beyaz Peynir', 'Lor Peyniri', 'Tulum Peyniri',
+        'Rokfor Peyniri', 'Çedar Peyniri', 'Mozzarella', 'Ricotta', 'Yoğurt',
+        'Ayran', 'Kefir', 'Tereyağı', 'Margarin', 'Krema', 'Süt', 'Laktoz',
+        
+        // Diğer Alerjenler (Genişletilmiş)
+        'Kakao', 'Çikolata', 'Kahve', 'Çay', 'Alkol', 'Maya', 'Monosodyum Glutamat (MSG)',
+        'Sülfit', 'Nitrat', 'Nitrit', 'Tartrazin', 'Sunset Yellow', 'Carmine',
+        'Aspartam', 'Sakarin', 'Sukraloz', 'Gıda Boyası', 'Koruyucu Maddeler',
+        'Emülgatörler', 'Stabilizatörler', 'Antioksidanlar', 'Aroma Maddeleri'
+    ];
+    showPreferenceModal('Alerjilerim', currentAllergies, 'allergies');
+}
+
+function editDislikes() {
+    const currentDislikes = [
+        // Sebzeler (Genişletilmiş)
+        'Patlıcan', 'Bamya', 'Karnabahar', 'Brokoli', 'Brüksel Lahanası', 'Lahana',
+        'Kırmızı Lahana', 'Kara Lahana', 'Şalgam', 'Turp', 'Havuç', 'Kereviz',
+        'Pırasa', 'Soğan', 'Sarımsak', 'Mantar', 'Domates', 'Biber', 'Salatalık',
+        'Kabak', 'Balkabağı', 'Patates', 'Tatlı Patates', 'Bezelye', 'Fasulye',
+        'Nohut', 'Mercimek', 'Bakla', 'Barbunya', 'Ispanak', 'Marul', 'Roka',
+        'Maydanoz', 'Dereotu', 'Fesleğen', 'Nane', 'Kişniş', 'Rezene',
+        
+        // Meyveler (Genişletilmiş)
+        'Muz', 'Avokado', 'Kivi', 'Ananas', 'Mango', 'Papaya', 'Greyfurt',
+        'Limon', 'Portakal', 'Mandalina', 'Çilek', 'Kiraz', 'Vişne', 'Erik',
+        'Şeftali', 'Kayısı', 'Armut', 'Elma', 'Üzüm', 'İncir', 'Hurma',
+        'Böğürtlen', 'Ahududu', 'Yaban Mersini', 'Kızılcık', 'Karpuz', 'Kavun',
+        'Nektarin', 'Guava', 'Nar', 'Litchi', 'Rambutan', 'Dragon Fruit',
+        
+        // Et ve Protein (Genişletilmiş)
+        'Karaciğer', 'Böbrek', 'Dil', 'İşkembe', 'Kokoreç', 'Sucuk', 'Sosis',
+        'Pastırma', 'Jambon', 'Bacon', 'Salam', 'Balık', 'Somon', 'Ton Balığı',
+        'Kalamar', 'Ahtapot', 'Midye', 'İstiridye', 'Karides', 'Yengeç', 'Istakoz',
+        'Sığır Eti', 'Kuzu Eti', 'Domuz Eti', 'Tavuk', 'Hindi', 'Ördek', 'Kaz',
+        'Tavşan', 'Geyik', 'Yaban Domuzu', 'Sığır Ciğeri', 'Kuzu Ciğeri',
+        
+        // Süt Ürünleri (Genişletilmiş)
+        'Peynir', 'Kaşar Peyniri', 'Beyaz Peynir', 'Lor Peyniri', 'Tulum Peyniri',
+        'Rokfor Peyniri', 'Çedar Peyniri', 'Mozzarella', 'Ricotta', 'Yoğurt',
+        'Ayran', 'Kefir', 'Tereyağı', 'Margarin', 'Krema', 'Süt', 'Laktoz',
+        'Brie Peyniri', 'Camembert', 'Gorgonzola', 'Parmesan', 'Feta',
+        'Halloumi', 'Cottage Cheese', 'Cream Cheese', 'Mascarpone',
+        
+        // Tahıllar ve Baklagiller (Genişletilmiş)
+        'Bulgur', 'Kinoa', 'Amarant', 'Chia Tohumu', 'Keten Tohumu', 'Nohut',
+        'Fasulye', 'Mercimek', 'Bezelye', 'Bakla', 'Barbunya', 'Kuru Fasulye',
+        'Arpa', 'Çavdar', 'Yulaf', 'Mısır', 'Pirinç', 'Buğday', 'Spelt',
+        'Freekeh', 'Farro', 'Teff', 'Sorghum', 'Millet',
+        
+        // Baharat ve Otlar (Genişletilmiş)
+        'Kekik', 'Biberiye', 'Defne Yaprağı', 'Karanfil', 'Tarçın', 'Zencefil',
+        'Zerdeçal', 'Kimyon', 'Karabiber', 'Kırmızı Biber', 'Pul Biber',
+        'Sumak', 'Nar Ekşisi', 'Sirke', 'Limon Suyu', 'Sarımsak', 'Soğan',
+        'Muskat', 'Vanilya', 'Anason', 'Rezene', 'Kişniş', 'Fesleğen',
+        'Nane', 'Maydanoz', 'Dereotu', 'Biberiye', 'Adaçayı', 'Kekik',
+        
+        // Diğer (Genişletilmiş)
+        'Zeytin', 'Turşu', 'Lahana Turşusu', 'Kornişon', 'Acı Biber', 'Biber Turşusu',
+        'Hardal', 'Ketçap', 'Mayonez', 'Sos', 'Baharat Karışımları', 'Worcestershire',
+        'Soya Sosu', 'Balzamik Sirke', 'Şarap Sirkesi', 'Elma Sirkesi', 'Beyaz Sirke',
+        'Truffle', 'Mantar Sosu', 'Barbekü Sosu', 'Tatlı Sos', 'Acı Sos',
+        'Sriracha', 'Tabasco', 'Chili Sosu', 'Hoisin Sosu', 'Oyster Sosu',
+        
+        // Tatlılar ve Şekerler
+        'Çikolata', 'Kakao', 'Vanilya', 'Karamel', 'Toffee', 'Nougat',
+        'Marshmallow', 'Jelibon', 'Lokum', 'Baklava', 'Künefe', 'Kadayıf',
+        'Şekerleme', 'Bonbon', 'Truffle', 'Praline', 'Fondant', 'Marzipan',
+        
+        // İçecekler
+        'Kahve', 'Çay', 'Alkol', 'Bira', 'Şarap', 'Votka', 'Viski', 'Rakı',
+        'Kola', 'Gazoz', 'Enerji İçeceği', 'Spor İçeceği', 'Meyve Suyu',
+        'Smoothie', 'Milkshake', 'Hot Chocolate', 'Matcha', 'Chai',
+        
+        // Atıştırmalıklar
+        'Cips', 'Kraker', 'Bisküvi', 'Kurabiye', 'Pasta', 'Kek', 'Muffin',
+        'Donut', 'Croissant', 'Bagel', 'Pretzel', 'Popcorn', 'Nuts',
+        'Trail Mix', 'Granola Bar', 'Energy Bar', 'Protein Bar'
+    ];
+    showPreferenceModal('Sevmediğim Ürünler', currentDislikes, 'dislikes');
+}
+
+function editDietPreferences() {
+    const currentDiet = [
+        // Ana Diyet Türleri (Genişletilmiş)
+        'Vejetaryen', 'Vegan', 'Glutensiz', 'Ketojenik', 'Akdeniz', 'Düşük Karbonhidrat',
+        'Düşük Yağ', 'Düşük Sodyum', 'Yüksek Protein', 'Düşük Kalori', 'Intermittent Fasting',
+        'Carnivore', 'Flexitarian', 'Pescatarian', 'Raw Vegan', 'Whole30', 'DASH',
+        
+        // Özel Diyetler (Genişletilmiş)
+        'Paleo', 'Raw Food', 'Macrobiotic', 'Ayurveda', 'MIND Diet', 'Nordic Diet',
+        'Anti-Inflamatuar', 'Alkali Diyet', 'Detoks Diyeti', 'Çiğ Beslenme', 'FODMAP',
+        'AIP (Autoimmune Protocol)', 'SCD (Specific Carbohydrate Diet)', 'GAPS Diet',
+        'Low Histamine', 'Low Oxalate', 'Low Purine', 'Elimination Diet',
+        
+        // Kısıtlamalar (Genişletilmiş)
+        'Şekersiz', 'Tuzsuz', 'Yağsız', 'Kolesterolsüz', 'Laktozsuz', 'Fruktozsuz',
+        'Histamin Düşük', 'FODMAP Düşük', 'Oksalat Düşük', 'Purine Düşük', 'Gluten-Free',
+        'Dairy-Free', 'Nut-Free', 'Soy-Free', 'Egg-Free', 'Fish-Free', 'Shellfish-Free',
+        'Nightshade-Free', 'Caffeine-Free', 'Alcohol-Free', 'Processed Food-Free',
+        
+        // Sağlık Odaklı (Genişletilmiş)
+        'Kalp Dostu', 'Diyabet Dostu', 'Hipertansiyon Dostu', 'Böbrek Dostu',
+        'Karaciğer Dostu', 'Sindirim Dostu', 'Bağışıklık Güçlendirici', 'Anti-Aging',
+        'Weight Loss', 'Muscle Building', 'Endurance Training', 'Recovery Focused',
+        'Hormone Balance', 'Thyroid Support', 'Adrenal Support', 'Gut Health',
+        
+        // Yaşam Tarzı (Genişletilmiş)
+        'Organik', 'Doğal', 'Yerel Ürünler', 'Sürdürülebilir', 'Ekolojik', 'Ethical',
+        'Hormon-Free', 'Antibiyotik-Free', 'GDO-Free', 'Koruyucu Madde-Free',
+        'Pesticide-Free', 'Herbicide-Free', 'Artificial Color-Free', 'Preservative-Free',
+        'Clean Eating', 'Whole Foods', 'Minimally Processed', 'Farm-to-Table',
+        
+        // Kültürel ve Dini (Genişletilmiş)
+        'Halal', 'Kosher', 'Hindu', 'Buddhist', 'Jain', 'Rastafarian', 'Seventh-day Adventist',
+        'Türk Mutfağı', 'İtalyan Mutfağı', 'Fransız Mutfağı', 'Japon Mutfağı',
+        'Çin Mutfağı', 'Hint Mutfağı', 'Meksika Mutfağı', 'Arap Mutfağı', 'Thai Mutfağı',
+        'Korean Mutfağı', 'Mediterranean Mutfağı', 'Middle Eastern Mutfağı',
+        
+        // Spor ve Fitness (Genişletilmiş)
+        'Bodybuilding', 'Powerlifting', 'CrossFit', 'Endurance Sports', 'Marathon Training',
+        'Cycling', 'Swimming', 'Yoga', 'Pilates', 'Martial Arts', 'Team Sports',
+        'High Intensity Training', 'Low Intensity Training', 'Recovery Nutrition',
+        'Pre-Workout', 'Post-Workout', 'Competition Diet', 'Off-Season Diet',
+        
+        // Yaş Grupları (Genişletilmiş)
+        'Çocuk Dostu', 'Genç Yetişkin', 'Orta Yaş', 'Yaşlı Dostu', 'Hamile Kadın',
+        'Emziren Anne', 'Menopoz Dönemi', 'Andropoz Dönemi', 'Büyüme Dönemi',
+        'Okul Çağı', 'Ergenlik', 'Yetişkin', 'Yaşlılık', 'Geriatrik',
+        
+        // Özel Durumlar (Genişletilmiş)
+        'Kanser Hastası', 'Kalp Hastası', 'Diyabet Hastası', 'Hipertansiyon Hastası',
+        'Böbrek Hastası', 'Karaciğer Hastası', 'Sindirim Sorunu', 'Bağırsak Hastalığı',
+        'Otoimmün Hastalık', 'Tiroid Hastalığı', 'Adrenal Yorgunluk', 'Kronik Yorgunluk',
+        'Fibromiyalji', 'IBS', 'Crohn Hastalığı', 'Ülseratif Kolit', 'Çölyak Hastalığı',
+        
+        // Beslenme Yaklaşımları (Genişletilmiş)
+        'Plant-Based', 'Animal-Based', 'Balanced', 'Moderate', 'Strict', 'Flexible',
+        'Meal Planning', 'Batch Cooking', 'Meal Prep', 'Portion Control', 'Mindful Eating',
+        'Intuitive Eating', 'Hunger-Based Eating', 'Time-Restricted Eating',
+        'One Meal A Day (OMAD)', '5:2 Diet', '16:8 Fasting', 'Alternate Day Fasting',
+        
+        // Besin Odaklı (Genişletilmiş)
+        'High Fiber', 'High Antioxidant', 'High Omega-3', 'High Protein', 'High Carb',
+        'High Fat', 'Low Glycemic', 'High Nutrient Density', 'Alkaline Foods',
+        'Fermented Foods', 'Probiotic-Rich', 'Prebiotic-Rich', 'Anti-Inflammatory Foods',
+        'Brain Foods', 'Heart-Healthy Foods', 'Bone-Healthy Foods', 'Eye-Healthy Foods'
+    ];
+    showPreferenceModal('Diyet Tercihlerim', currentDiet, 'diet-preferences');
+}
+
+function showPreferenceModal(title, options, type) {
+    // Modal HTML oluştur
+    const modalHtml = `
+        <div class="modal fade" id="preferenceModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">${title}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mevcut Seçimler:</label>
+                            <div id="selected-items" class="border p-3 rounded bg-light" style="min-height: 60px; max-height: 120px; overflow-y: auto;">
+                                <small class="text-muted">Henüz seçim yapılmadı</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Arama:</label>
+                            <input type="text" id="search-input" class="form-control" placeholder="Seçeneklerde ara..." onkeyup="filterOptions()">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Seçenekler:</label>
+                            <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                                <div class="row" id="options-container">
+                                    ${options.map(option => `
+                                        <div class="col-md-6 col-lg-4 mb-2 option-item" data-text="${option.toLowerCase()}">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" value="${option}" id="${option.replace(/\s+/g, '_')}">
+                                                <label class="form-check-label small" for="${option.replace(/\s+/g, '_')}">
+                                                    ${option}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="button" class="btn btn-primary" onclick="savePreferences('${type}')">Kaydet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Eski modal varsa kaldır
+    const existingModal = document.getElementById('preferenceModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Yeni modal ekle
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Modal'ı göster
+    const modal = new bootstrap.Modal(document.getElementById('preferenceModal'));
+    modal.show();
+    
+    // Checkbox event listener'ları ekle
+    document.querySelectorAll('#preferenceModal input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedItems);
+    });
+}
+
+function updateSelectedItems() {
+    const selectedItems = document.querySelectorAll('#preferenceModal input[type="checkbox"]:checked');
+    const container = document.getElementById('selected-items');
+    
+    container.innerHTML = '';
+    selectedItems.forEach(checkbox => {
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-primary me-1 mb-1';
+        badge.textContent = checkbox.value;
+        container.appendChild(badge);
+    });
+}
+
+function savePreferences(type) {
+    const selectedItems = Array.from(document.querySelectorAll('#preferenceModal input[type="checkbox"]:checked'))
+        .map(checkbox => checkbox.value);
+    
+    // AJAX ile kaydet
+    fetch('/api/save-preferences', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            type: type,
+            items: selectedItems
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // UI'yi güncelle
+            updatePreferenceUI(type, selectedItems);
+            
+            // Modal'ı kapat
+            const modal = bootstrap.Modal.getInstance(document.getElementById('preferenceModal'));
+            modal.hide();
+            
+            // Başarı mesajı
+            showAlert('Tercihleriniz başarıyla kaydedildi!', 'success');
+        } else {
+            showAlert('Hata: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Bir hata oluştu!', 'danger');
+    });
+}
+
+function updatePreferenceUI(type, items) {
+    const container = document.getElementById(type + '-list');
+    container.innerHTML = '';
+    
+    if (items.length === 0) {
+        const emptyText = document.createElement('span');
+        emptyText.className = 'text-muted';
+        emptyText.textContent = 'Henüz tercih belirtilmemiş';
+        container.appendChild(emptyText);
+        return;
+    }
+    
+    items.forEach(item => {
+        const badge = document.createElement('span');
+        
+        // Tip'e göre renk belirle
+        if (type === 'allergies') {
+            badge.className = 'badge bg-warning text-dark me-1 mb-1';
+        } else if (type === 'dislikes') {
+            badge.className = 'badge bg-danger me-1 mb-1';
+        } else if (type === 'diet-preferences') {
+            badge.className = 'badge bg-success me-1 mb-1';
+        } else {
+            badge.className = 'badge bg-primary me-1 mb-1';
+        }
+        
+        badge.textContent = item;
+        container.appendChild(badge);
+    });
+}
+
+function filterOptions() {
+    const searchInput = document.getElementById('search-input');
+    const searchTerm = searchInput.value.toLowerCase();
+    const optionItems = document.querySelectorAll('.option-item');
+    
+    optionItems.forEach(item => {
+        const text = item.getAttribute('data-text');
+        if (text.includes(searchTerm)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function showAlert(message, type) {
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // Alert'i sayfanın üstüne ekle
+    const container = document.querySelector('.container');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // 3 saniye sonra otomatik kapat
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}
+

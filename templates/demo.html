@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Demo - AfiyetAI{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-primary">
+                    <i class="fas fa-play-circle me-3"></i>
+                    Demo
+                </h1>
+                <p class="lead">
+                    AfiyetAI sisteminin nasıl çalıştığını görmek için örnek fişi kullanabilirsiniz.
+                </p>
+            </div>
+
+            <!-- Demo Image -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-image me-2"></i>
+                        Örnek Fiş
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <img src="{{ url_for('static', filename='images/demo-receipt.jpg') }}" 
+                         alt="Örnek Fiş" 
+                         class="img-fluid rounded shadow"
+                         style="max-height: 400px;">
+                    <p class="text-muted mt-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Bu örnek fişi kullanarak sistemi test edebilirsiniz.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Demo Button -->
+            <div class="text-center mb-5">
+                <button class="btn btn-primary btn-lg" onclick="runDemo()">
+                    <i class="fas fa-magic me-2"></i>
+                    Demo'yu Çalıştır
+                </button>
+            </div>
+
+            <!-- Demo Results -->
+            <div id="demoResults" style="display: none;">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Demo Sonuçları
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h4 class="text-primary">8</h4>
+                                    <p class="text-muted mb-0">Ürün</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h4 class="text-success">5</h4>
+                                    <p class="text-muted mb-0">Tarif</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h4 class="text-warning">2.3s</h4>
+                                    <p class="text-muted mb-0">Süre</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h4 class="text-info">%98</h4>
+                                    <p class="text-muted mb-0">Başarı</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold mb-3">Çıkarılan Ürünler:</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Yumurta</span>
+                                        <span class="badge bg-success">3.50 ₺</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Süt</span>
+                                        <span class="badge bg-success">4.20 ₺</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Ekmek</span>
+                                        <span class="badge bg-success">2.80 ₺</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Peynir</span>
+                                        <span class="badge bg-success">8.90 ₺</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Domates</span>
+                                        <span class="badge bg-success">5.40 ₺</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Soğan</span>
+                                        <span class="badge bg-success">2.10 ₺</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Patates</span>
+                                        <span class="badge bg-success">3.60 ₺</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Pirinç</span>
+                                        <span class="badge bg-success">6.20 ₺</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold mb-3">Önerilen Tarifler:</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-success">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-success">Kare Şeytan Yumurtaları</h6>
+                                        <p class="card-text small">
+                                            <span class="badge bg-danger me-1">ÇOK ACİL</span>
+                                            <span class="badge bg-info me-1">15 dk</span>
+                                            <span class="badge bg-secondary">4 porsiyon</span>
+                                        </p>
+                                        <p class="small text-muted">
+                                            Kullanılan: Yumurta, Peynir<br>
+                                            Eksik: Jambon
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-warning">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-warning">Mini Jambonlu Omletler</h6>
+                                        <p class="card-text small">
+                                            <span class="badge bg-warning me-1">ACİL</span>
+                                            <span class="badge bg-info me-1">20 dk</span>
+                                            <span class="badge bg-secondary">2 porsiyon</span>
+                                        </p>
+                                        <p class="small text-muted">
+                                            Kullanılan: Yumurta, Süt, Domates<br>
+                                            Eksik: Jambon
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h3 class="text-center mb-4">Sistem Özellikleri</h3>
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 text-center">
+                                <div class="card-body">
+                                    <i class="fas fa-eye fa-3x text-primary mb-3"></i>
+                                    <h5>OCR Teknolojisi</h5>
+                                    <p class="text-muted">Tesseract ile yüksek doğrulukta metin çıkarma</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 text-center">
+                                <div class="card-body">
+                                    <i class="fas fa-language fa-3x text-success mb-3"></i>
+                                    <h5>Çoklu Dil Desteği</h5>
+                                    <p class="text-muted">Türkçe ve İngilizce ürün adları desteği</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 text-center">
+                                <div class="card-body">
+                                    <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                                    <h5>Raf Ömrü Analizi</h5>
+                                    <p class="text-muted">Ürünlerin raf ömrüne göre önceliklendirme</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function runDemo() {
+    const button = document.querySelector('button[onclick="runDemo()"]');
+    const results = document.getElementById('demoResults');
+    
+    // Show loading state
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Demo Çalışıyor...';
+    
+    // Simulate processing
+    setTimeout(() => {
+        button.style.display = 'none';
+        results.style.display = 'block';
+        results.scrollIntoView({ behavior: 'smooth' });
+    }, 3000);
+}
+</script>
+{% endblock %}
+

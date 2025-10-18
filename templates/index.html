@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+
+{% block title %}AfiyetAI - Akıllı Fiş Analizi{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="premium-hero">
+    <div class="hero-background"></div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <div class="hero-content">
+                    <div class="premium-badge mb-3">
+                        <span class="badge bg-gradient-primary px-3 py-2">
+                            <i class="fas fa-crown me-2"></i>AI Teknolojisi
+                        </span>
+                    </div>
+                    <h1 class="display-3 fw-bold text-white mb-4">
+                        <img src="{{ url_for('static', filename='images/logo1.png') }}" alt="AfiyetAI" height="60" class="me-3">
+                        AfiyetAI
+                    </h1>
+                    <p class="lead text-white-50 mb-5 fs-4">
+                        Fişinizi yükleyin, AI teknolojisi ile ürünlerinizi otomatik çıkaralım ve 
+                        kişiselleştirilmiş tarif önerileri alın!
+                    </p>
+                
+                    {% if user %}
+                        <div class="premium-welcome-card">
+                            <div class="card border-0 shadow-lg bg-white bg-opacity-10 backdrop-blur">
+                                <div class="card-body text-center p-4">
+                                    <div class="premium-avatar mb-3">
+                                        <i class="fas fa-user-circle fa-3x text-warning"></i>
+                                    </div>
+                                    <h4 class="text-white mb-2">Hoş geldiniz, {{ user.username }}!</h4>
+                                    <p class="text-white-50 mb-3">Hesabınız aktif</p>
+                                    <a href="{{ url_for('dashboard') }}" class="btn btn-warning btn-lg px-4">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Kontrol Paneli
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="premium-auth-section mb-5">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <div class="card border-0 shadow-lg bg-white bg-opacity-10 backdrop-blur">
+                                        <div class="card-body text-center p-5">
+                                            <h3 class="text-white mb-4">Deneyimi Başlatın</h3>
+                                            <p class="text-white-50 mb-4">Kişiselleştirilmiş tarif önerileri ve gelişmiş analiz özellikleri</p>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg w-100">
+                                                        <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                                                    </a>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg w-100">
+                                                        <i class="fas fa-user-plus me-2"></i>Ücretsiz Kayıt
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <!-- Features -->
+                    <div class="premium-features">
+                        <div class="row g-4">
+                            <div class="col-lg-4">
+                                <div class="feature-card">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-brain fa-3x text-primary"></i>
+                                    </div>
+                                    <h5 class="text-white">AI OCR Teknolojisi</h5>
+                                    <p class="text-white-50">Gelişmiş görüntü işleme ile fiş analizi</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="feature-card">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-user-cog fa-3x text-success"></i>
+                                    </div>
+                                    <h5 class="text-white">Kişiselleştirme</h5>
+                                    <p class="text-white-50">Alerji ve tercihlerinize göre öneriler</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="feature-card">
+                                    <div class="feature-icon">
+                                        <i class="fas fa-chart-line fa-3x text-warning"></i>
+                                    </div>
+                                    <h5 class="text-white">Akıllı Analiz</h5>
+                                    <p class="text-white-50">Raf ömrü ve besin değeri analizi</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Section -->
+{% if user %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="premium-upload-card">
+                <div class="card border-0 shadow-lg bg-gradient-primary text-white">
+                    <div class="card-header border-0 bg-transparent text-center py-4">
+                        <div class="premium-icon mb-3">
+                            <i class="fas fa-magic fa-3x text-warning"></i>
+                        </div>
+                        <h3 class="mb-0">
+                            <i class="fas fa-cloud-upload-alt me-2"></i>
+                            AI Fiş Analizi
+                        </h3>
+                        <p class="mb-0 mt-2 opacity-75">AI teknolojisi ile gelişmiş fiş işleme</p>
+                    </div>
+                    <div class="card-body p-5">
+                        <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+                            <div class="mb-4">
+                                <label for="file" class="form-label fw-bold text-white">
+                                    <i class="fas fa-camera me-2"></i>Fiş Fotoğrafı Seçin
+                                </label>
+                                <div class="premium-file-input">
+                                    <input type="file" class="form-control form-control-lg" id="file" name="file" accept="image/*" required>
+                                    <div class="file-preview mt-3" id="filePreview" style="display: none;">
+                                        <div class="preview-image-container">
+                                            <img id="previewImage" class="img-fluid rounded shadow" style="max-height: 200px;">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-text text-white-50 mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Desteklenen formatlar: JPG, PNG, GIF, BMP, TIFF (Max: 16MB)
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-warning btn-lg py-3" id="uploadBtn">
+                                    <i class="fas fa-brain me-2"></i>
+                                    AI ile Fişi Analiz Et
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Progress Bar -->
+                        <div class="mt-4" id="progressContainer" style="display: none;">
+                            <div class="premium-progress">
+                                <div class="progress bg-dark bg-opacity-25" style="height: 8px;">
+                                    <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <small class="text-white-50" id="progressText">
+                                        <i class="fas fa-cog fa-spin me-2"></i>AI analizi yapılıyor...
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works -->
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="premium-process-section">
+                <div class="text-center mb-5">
+                    <h2 class="display-5 fw-bold text-primary mb-3">
+                        <i class="fas fa-cogs me-3"></i>AI Süreci
+                    </h2>
+                    <p class="lead text-muted">Gelişmiş teknoloji ile 4 adımda sonuç</p>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="premium-step-card">
+                            <div class="step-icon">
+                                <div class="step-number">1</div>
+                                <i class="fas fa-cloud-upload-alt fa-2x text-primary"></i>
+                            </div>
+                            <h5 class="fw-bold">Fiş Yükleme</h5>
+                            <p class="text-muted">Market fişinizin fotoğrafını yükleyin</p>
+                            <div class="step-line"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="premium-step-card">
+                            <div class="step-icon">
+                                <div class="step-number">2</div>
+                                <i class="fas fa-brain fa-2x text-success"></i>
+                            </div>
+                            <h5 class="fw-bold">AI OCR Analizi</h5>
+                            <p class="text-muted">Gelişmiş AI ile metin çıkarma</p>
+                            <div class="step-line"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="premium-step-card">
+                            <div class="step-icon">
+                                <div class="step-number">3</div>
+                                <i class="fas fa-user-cog fa-2x text-warning"></i>
+                            </div>
+                            <h5 class="fw-bold">Kişiselleştirme</h5>
+                            <p class="text-muted">Tercihlerinize göre ürün analizi</p>
+                            <div class="step-line"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="premium-step-card">
+                            <div class="step-icon">
+                                <div class="step-number">4</div>
+                                <i class="fas fa-magic fa-2x text-danger"></i>
+                            </div>
+                            <h5 class="fw-bold">Akıllı Öneriler</h5>
+                            <p class="text-muted">Raf ömrüne göre tarif önerileri</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if user %}
+<script>
+// File preview functionality
+document.getElementById('file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('filePreview');
+    const previewImage = document.getElementById('previewImage');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            preview.style.display = 'block';
+            
+            // Add premium animation
+            preview.style.animation = 'fadeIn 0.5s ease-out';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.style.display = 'none';
+    }
+});
+
+// Upload form handling
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('file');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.querySelector('.progress-bar');
+    const progressText = document.getElementById('progressText');
+    
+    if (fileInput.files.length === 0) {
+        e.preventDefault();
+        
+        // Alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-warning alert-dismissible fade show position-fixed';
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Dosya Seçin!</strong> Lütfen bir fiş fotoğrafı seçin.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+        
+        return;
+    }
+    
+    // Progress bar animation
+    progressContainer.style.display = 'block';
+    progressContainer.style.animation = 'fadeInUp 0.5s ease-out';
+    
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = '<i class="fas fa-brain fa-spin me-2"></i>AI Analizi Yapılıyor...';
+    
+    // Progress simulation with better messages
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 12 + 3; // Slower, more realistic progress
+        if (progress > 85) progress = 85;
+        progressBar.style.width = progress + '%';
+        
+        // Progress messages
+        if (progress < 20) {
+            progressText.innerHTML = '<i class="fas fa-upload me-2"></i>Fiş yükleniyor...';
+        } else if (progress < 40) {
+            progressText.innerHTML = '<i class="fas fa-eye me-2"></i>OCR ile metin çıkarılıyor...';
+        } else if (progress < 60) {
+            progressText.innerHTML = '<i class="fas fa-brain me-2"></i>AI ile ürün analizi yapılıyor...';
+        } else if (progress < 80) {
+            progressText.innerHTML = '<i class="fas fa-user-cog me-2"></i>Kişiselleştirme uygulanıyor...';
+        } else {
+            progressText.innerHTML = '<i class="fas fa-magic me-2"></i>Tarif önerileri hazırlanıyor...';
+        }
+    }, 600);
+    
+    // Clean up interval after form submission
+    setTimeout(() => {
+        clearInterval(interval);
+    }, 12000);
+});
+
+// Page load animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate elements on scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'fadeInUp 0.6s ease-out';
+                entry.target.style.opacity = '1';
+            }
+        });
+    }, observerOptions);
+    
+    // Observe all premium cards
+    document.querySelectorAll('.feature-card, .premium-step-card, .premium-upload-card').forEach(el => {
+        el.style.opacity = '0';
+        observer.observe(el);
+    });
+});
+
+// Hover effects
+document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px) scale(1.02)';
+    });
+    
+    btn.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+    });
+});
+
+// Card hover effects
+document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-5px) scale(1.01)';
+        this.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+        this.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+    });
+});
+</script>
+{% endif %}
+{% endblock %}
+

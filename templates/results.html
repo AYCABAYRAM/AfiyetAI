@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block title %}Sonuçlar - AfiyetAI{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary">
+                    <i class="fas fa-check-circle me-2"></i>
+                    İşlem Tamamlandı
+                </h2>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Yeni Fiş Yükle
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                    <h4>{{ data.total_products }}</h4>
+                    <p class="mb-0">Toplam Ürün</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-utensils fa-2x mb-2"></i>
+                    <h4>{{ data.recommendations|length }}</h4>
+                    <p class="mb-0">Tarif Önerisi</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h4>{{ "%.1f"|format(data.processing_time) }}s</h4>
+                    <p class="mb-0">İşlem Süresi</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    {% if data.receipt_image_url %}
+                        <img src="{{ data.receipt_image_url }}" alt="Fiş Görseli" class="img-fluid rounded mb-2" style="max-height: 150px; max-width: 100%;">
+                    {% else %}
+                        <i class="fas fa-file-image fa-2x mb-2"></i>
+                    {% endif %}
+                    <h6 class="mb-1">İşlenen Dosya</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Çıkarılan Ürünler
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if data.products %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Ürün Adı</th>
+                                        <th>Raf Ömrü</th>
+                                        <th>Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in data.products %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ product.name }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if product.shelf_life_days %}
+                                                <span class="badge 
+                                                    {% if product.shelf_life_days <= 3 %}bg-danger
+                                                    {% elif product.shelf_life_days <= 7 %}bg-warning
+                                                    {% elif product.shelf_life_days <= 14 %}bg-info
+                                                    {% else %}bg-success{% endif %}">
+                                                    <i class="fas fa-calendar-alt me-1"></i>
+                                                    {{ product.shelf_life_days }} gün
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-question me-1"></i>Bilinmiyor
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>Başarılı
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <p class="text-muted">Hiç ürün bulunamadı.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Recommendations -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-utensils me-2"></i>
+                        Raf Ömrüne Göre Tarif Önerileri
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if data.recommendations %}
+                        <div class="row">
+                            {% for recipe in data.recommendations %}
+                            {% set urgency = recipe.shelf_life_urgency if recipe.shelf_life_urgency is defined else 'genel' %}
+                            {% set title = recipe.title_tr if recipe.title_tr is defined else (recipe.title if recipe.title is defined else 'Tarif') %}
+                            {% set ready_in = recipe.ready_in_minutes if recipe.ready_in_minutes is defined else (recipe.readyInMinutes if recipe.readyInMinutes is defined else 0) %}
+                            {% set servings = recipe.servings if recipe.servings is defined else 0 %}
+                            {% set priority = recipe.priority_score if recipe.priority_score is defined else 0 %}
+                            {% set source_url = recipe.source_url if recipe.source_url is defined else (recipe.sourceUrl if recipe.sourceUrl is defined else '') %}
+                            <div class="col-lg-6 mb-4">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <h6 class="card-title text-primary fw-bold">{{ title }}</h6>
+                                            <span class="badge 
+                                                {% if urgency == 'çok_acil' %}bg-danger
+                                                {% elif urgency == 'acil' %}bg-warning
+                                                {% elif urgency == 'orta' %}bg-info
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ urgency|upper }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-6">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    {{ ready_in }} dk
+                                                </small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-users me-1"></i>
+                                                    {{ servings }} porsiyon
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <div class="progress mb-2" style="height: 8px;">
+                                                <div class="progress-bar 
+                                                    {% if priority >= 80 %}bg-danger
+                                                    {% elif priority >= 60 %}bg-warning
+                                                    {% elif priority >= 40 %}bg-info
+                                                    {% else %}bg-secondary{% endif %}" 
+                                                     style="width: {{ priority }}%">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">Öncelik: {{ "%.1f"|format(priority) }}</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <h6 class="small fw-bold text-success mb-1">
+                                                <i class="fas fa-check-circle me-1"></i>Kullanılan Malzemeler:
+                                            </h6>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                {% if recipe.used_products_tr is defined %}
+                                                    {% for product in recipe.used_products_tr[:3] %}
+                                                    <span class="badge bg-success">{{ product }}</span>
+                                                    {% endfor %}
+                                                    {% if recipe.used_products_tr|length > 3 %}
+                                                    <span class="badge bg-secondary">+{{ recipe.used_products_tr|length - 3 }}</span>
+                                                    {% endif %}
+                                                {% elif recipe.usedIngredients is defined %}
+                                                    {% for ing in recipe.usedIngredients[:3] %}
+                                                    <span class="badge bg-success">{{ ing.name }}</span>
+                                                    {% endfor %}
+                                                    {% if recipe.usedIngredients|length > 3 %}
+                                                    <span class="badge bg-secondary">+{{ recipe.usedIngredients|length - 3 }}</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        {% if (recipe.missing_products_tr is defined and recipe.missing_products_tr) or (recipe.missedIngredients is defined and recipe.missedIngredients) %}
+                                        <div class="mb-3">
+                                            <h6 class="small fw-bold text-warning mb-1">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Eksik Malzemeler:
+                                            </h6>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                {% if recipe.missing_products_tr is defined %}
+                                                    {% for product in recipe.missing_products_tr %}
+                                                    <span class="badge bg-warning">{{ product }}</span>
+                                                    {% endfor %}
+                                                {% elif recipe.missedIngredients is defined %}
+                                                    {% for ing in recipe.missedIngredients %}
+                                                    <span class="badge bg-warning">{{ ing.name }}</span>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="text-center">
+                                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#recipeModal{{ loop.index }}">
+                                                <i class="fas fa-eye me-1"></i>Tarifi Görüntüle
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Tarif önerisi bulunamadı.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recipe Modals -->
+{% for recipe in data.recommendations %}
+{% set title = recipe.title_tr if recipe.title_tr is defined else (recipe.title if recipe.title is defined else 'Tarif') %}
+{% set source_url = recipe.source_url if recipe.source_url is defined else (recipe.sourceUrl if recipe.sourceUrl is defined else '') %}
+{% if source_url %}
+<div class="modal fade" id="recipeModal{{ loop.index }}" tabindex="-1" aria-labelledby="recipeModalLabel{{ loop.index }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="recipeModalLabel{{ loop.index }}">
+                    <i class="fas fa-utensils me-2"></i>{{ title }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        {% if recipe.summary %}
+                        <div class="mb-3">
+                            <h6 class="fw-bold mb-2">Tarif Özeti:</h6>
+                            <p class="text-muted">{{ recipe.summary|safe }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if recipe.instructions %}
+                        <div class="mb-3">
+                            <h6 class="fw-bold mb-2">Hazırlık Talimatları:</h6>
+                            <div class="text-muted">{{ recipe.instructions|safe }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if source_url and source_url != '' and source_url.startswith('http') %}
+                        <div class="text-center mt-3">
+                            <a href="{{ source_url }}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt me-1"></i>Orijinal Sitede Aç
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="text-center mt-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Bu tarif için orijinal site linki mevcut değil.
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Tarif Bilgileri</h6>
+                            </div>
+                            <div class="card-body">
+                                {% set ready_in = recipe.ready_in_minutes if recipe.ready_in_minutes is defined else (recipe.readyInMinutes if recipe.readyInMinutes is defined else 0) %}
+                                {% set servings = recipe.servings if recipe.servings is defined else 0 %}
+                                {% set priority = recipe.priority_score if recipe.priority_score is defined else 0 %}
+                                
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Hazırlanma Süresi: {{ ready_in }} dakika
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-users me-1"></i>
+                                        Porsiyon: {{ servings }} kişi
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-star me-1"></i>
+                                        Öncelik Skoru: {{ "%.1f"|format(priority) }}
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h6 class="small fw-bold text-success mb-1">Kullanılan Malzemeler:</h6>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% if recipe.used_products_tr is defined %}
+                                            {% for product in recipe.used_products_tr[:5] %}
+                                            <span class="badge bg-success small">{{ product }}</span>
+                                            {% endfor %}
+                                        {% elif recipe.usedIngredients is defined %}
+                                            {% for ing in recipe.usedIngredients[:5] %}
+                                            <span class="badge bg-success small">{{ ing.name }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                {% if (recipe.missing_products_tr is defined and recipe.missing_products_tr) or (recipe.missedIngredients is defined and recipe.missedIngredients) %}
+                                <div class="mb-3">
+                                    <h6 class="small fw-bold text-warning mb-1">Eksik Malzemeler:</h6>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% if recipe.missing_products_tr is defined %}
+                                            {% for product in recipe.missing_products_tr %}
+                                            <span class="badge bg-warning small">{{ product }}</span>
+                                            {% endfor %}
+                                        {% elif recipe.missedIngredients is defined %}
+                                            {% for ing in recipe.missedIngredients %}
+                                            <span class="badge bg-warning small">{{ ing.name }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <a href="{{ source_url }}" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt me-1"></i>Orijinal Sitede Aç
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+
