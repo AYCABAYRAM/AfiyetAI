@@ -1,0 +1,12 @@
+Flask==2.3.3
+Werkzeug==2.3.7
+Pillow==10.0.1
+requests==2.31.0
+python-dotenv==1.0.0
+psycopg2-binary==2.9.7
+SQLAlchemy==2.0.21
+gunicorn==21.2.0
+opencv-python==4.8.1.78
+pytesseract==0.3.10
+numpy==1.24.3
+rapidfuzz==3.5.2
